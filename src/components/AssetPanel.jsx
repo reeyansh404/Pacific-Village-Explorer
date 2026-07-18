@@ -210,7 +210,6 @@ const MOCK_ADAPTATIONS = {
 }
 
 export default function AssetPanel({ asset, year, village, appliedAdaptations, appliedAdaptationNames, onClose, onApplyAdaptation, onRemoveAdaptation }) {
-  const { t } = useT()
   const [adaptations, setAdaptations] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -261,7 +260,7 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, a
       <div className="mb-4">
         <div className="text-3xl mb-2">{ASSET_ICONS[asset.type]}</div>
         <h2 className="text-2xl font-bold">{asset.name}</h2>
-        <div className="text-sm text-slate-400 mt-1">{t('asset.' + asset.type)}</div>
+        <div className="text-sm text-slate-400 mt-1">{ASSET_LABELS[asset.type]}</div>
       </div>
 
       {(asset.culturalSignificance === 'high' || asset.culturalSignificance === 'critical') && (
@@ -291,7 +290,7 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, a
           <span className="text-2xl">{statusInfo.emoji}</span>
           <div>
             <div className="text-xl font-bold" style={{ color: STATUS_COLORS[status] }}>
-              {t('status.' + status)} — {statusInfo.headline}
+              {STATUS_LABELS[status]} — {statusInfo.headline}
             </div>
           </div>
         </div>
