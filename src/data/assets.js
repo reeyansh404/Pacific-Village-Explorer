@@ -1,12 +1,12 @@
 export const assets = [
-  // NAKAWAQA - Houses
+  // NAKAWAQA - Coastal houses on west bank land
   {
     id: 'nakawaqa-house-01',
     villageId: 'nakawaqa',
     type: 'house',
     name: 'Vunivalu Family Compound',
-    description: 'Home to 8 people across three generations, near the coastline',
-    coordinates: [-18.1412, 178.4425],
+    description: 'Home to 8 people across three generations, near the shore',
+    coordinates: [-18.1442, 177.5045],
     elevationM: 2.3,
     culturalSignificance: 'medium',
     states: {
@@ -22,7 +22,7 @@ export const assets = [
     type: 'house',
     name: 'Naidu Family Home',
     description: 'Traditional bure home for family of 6',
-    coordinates: [-18.1418, 178.4420],
+    coordinates: [-18.1438, 177.5030],
     elevationM: 3.1,
     culturalSignificance: 'low',
     states: {
@@ -38,7 +38,7 @@ export const assets = [
     type: 'house',
     name: "Chief's Residence",
     description: 'Traditional home of the village chief, community gathering point',
-    coordinates: [-18.1420, 178.4418],
+    coordinates: [-18.1420, 177.5040],
     elevationM: 4.2,
     culturalSignificance: 'high',
     states: {
@@ -48,14 +48,13 @@ export const assets = [
       2075: { status: 'at_risk', note: 'Elevation offers protection but increasing risk' }
     }
   },
-  // NAKAWAQA - Water sources
   {
     id: 'nakawaqa-well-01',
     villageId: 'nakawaqa',
     type: 'water',
     name: 'Main Freshwater Well',
-    description: 'Primary water source serving 45 households, community gathering site',
-    coordinates: [-18.1415, 178.4415],
+    description: 'Primary water source serving 45 households',
+    coordinates: [-18.1430, 177.5035],
     elevationM: 3.0,
     culturalSignificance: 'high',
     states: {
@@ -71,7 +70,7 @@ export const assets = [
     type: 'water',
     name: 'Secondary Community Well',
     description: 'Backup water source for 20 households',
-    coordinates: [-18.1422, 178.4422],
+    coordinates: [-18.1425, 177.5055],
     elevationM: 3.5,
     culturalSignificance: 'medium',
     states: {
@@ -81,14 +80,13 @@ export const assets = [
       2075: { status: 'compromised', note: 'Only usable during wet season' }
     }
   },
-  // NAKAWAQA - Farms
   {
     id: 'nakawaqa-farm-01',
     villageId: 'nakawaqa',
     type: 'farm',
     name: 'Community Taro Fields',
     description: 'Traditional taro cultivation feeding 60 people daily',
-    coordinates: [-18.1425, 178.4415],
+    coordinates: [-18.1450, 177.5015],
     elevationM: 2.8,
     culturalSignificance: 'high',
     states: {
@@ -104,7 +102,7 @@ export const assets = [
     type: 'farm',
     name: 'Coconut Grove',
     description: 'Community coconut palms for food, oil, and income',
-    coordinates: [-18.1430, 178.4420],
+    coordinates: [-18.1415, 177.5020],
     elevationM: 3.2,
     culturalSignificance: 'medium',
     states: {
@@ -114,14 +112,13 @@ export const assets = [
       2075: { status: 'compromised', note: 'Partial replanting unable to keep pace' }
     }
   },
-  // NAKAWAQA - Sacred sites
   {
     id: 'nakawaqa-sacred-01',
     villageId: 'nakawaqa',
     type: 'sacred',
     name: 'Ancestral Burial Ground',
     description: 'Sacred burial site for 12 generations of village ancestors',
-    coordinates: [-18.1410, 178.4428],
+    coordinates: [-18.1465, 177.5050],
     elevationM: 1.8,
     culturalSignificance: 'critical',
     states: {
@@ -137,7 +134,7 @@ export const assets = [
     type: 'sacred',
     name: 'Community Meeting House (Bure Kalou)',
     description: 'Traditional spiritual and ceremonial gathering place',
-    coordinates: [-18.1418, 178.4423],
+    coordinates: [-18.1410, 177.5050],
     elevationM: 3.5,
     culturalSignificance: 'critical',
     states: {
@@ -147,14 +144,13 @@ export const assets = [
       2075: { status: 'compromised', note: 'Repeated damage threatens tradition' }
     }
   },
-  // NAKAWAQA - Community infrastructure
   {
     id: 'nakawaqa-school-01',
     villageId: 'nakawaqa',
     type: 'school',
     name: 'Nakawaqa Village School',
     description: 'Primary school serving 45 children from surrounding villages',
-    coordinates: [-18.1416, 178.4412],
+    coordinates: [-18.1408, 177.5035],
     elevationM: 3.8,
     culturalSignificance: 'high',
     states: {
@@ -170,7 +166,7 @@ export const assets = [
     type: 'reef',
     name: 'Community Fishing Reef',
     description: 'Traditional fishing grounds supporting food security',
-    coordinates: [-18.1408, 178.4435],
+    coordinates: [-18.1490, 177.5080],
     elevationM: -2.0,
     culturalSignificance: 'high',
     states: {
@@ -186,7 +182,7 @@ export const assets = [
     type: 'road',
     name: 'Coastal Access Road',
     description: 'Main access road connecting village to district centre',
-    coordinates: [-18.1413, 178.4419],
+    coordinates: [-18.1445, 177.5065],
     elevationM: 2.5,
     culturalSignificance: 'medium',
     states: {

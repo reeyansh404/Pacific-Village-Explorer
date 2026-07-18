@@ -1,96 +1,257 @@
 import { useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polygon } from 'react-leaflet'
+import L from 'leaflet'
 import { assets } from '../data/assets'
-import { STATUS_COLORS, ASSET_ICONS, getAssetStatus } from '../utils/statusHelpers'
+import { STATUS_COLORS, ASSET_ICONS, getAssetStatus, SEA_LEVEL_RISE_METERS } from '../utils/statusHelpers'
 import TimeSlider from './TimeSlider'
 import Statistics from './Statistics'
 import AssetPanel from './AssetPanel'
 
 export default function VillageView({ village, onBack }) {
-  const [year, setYear] = useState(2026)
-  const [selectedAsset, setSelectedAsset] = useState(null)
-  const [appliedAdaptations, setAppliedAdaptations] = useState([])
+    const [year, setYear] = useState(2026)
+    const [selectedAsset, setSelectedAsset] = useState(null)
+    const [appliedAdaptations, setAppliedAdaptations] = useState([])
 
-  const villageAssets = assets.filter(a => a.villageId === village.id)
+    const villageAssets = assets.filter(a => a.villageId === village.id)
+    const seaLevelMeters = SEA_LEVEL_RISE_METERS[year]
 
-  return (
-    <div className="h-screen flex flex-col">
-      <div className="bg-slate-900 border-b border-slate-800 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="text-slate-400 hover:text-white text-sm"
-            >
-              ← All villages
-            </button>
-            <div>
-              <h1 className="text-xl font-bold">{village.name}, {village.country}</h1>
-              <div className="text-sm text-slate-400">{village.region} · {village.population} people</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // Flood polygon expands from the SOUTH (sea) INTO the land (north)
+    // Points spread along the coastline for realistic look
+    // Wider flood polygon covering more coastal area, spreading inland by year
+    const lat = village.coordinates[0]
+    const lng = village.coordinates[1]
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 relative">
-          <MapContainer
-            center={village.coordinates}
-            zoom={17}
-            className="h-full w-full"
-          >
-            <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution="Esri World Imagery"
-            />
-            {villageAssets.map(asset => {
-              const status = getAssetStatus(asset, year, appliedAdaptations)
-              return (
-                <CircleMarker
-                  key={asset.id}
-                  center={asset.coordinates}
-                  radius={12}
-                  fillColor={STATUS_COLORS[status]}
-                  color="white"
-                  weight={2}
-                  fillOpacity={0.8}
-                  eventHandlers={{ click: () => setSelectedAsset(asset) }}
-                >
-                  <Popup>
-                    <div className="font-semibold">
-                      {ASSET_ICONS[asset.type]} {asset.name}
+    const floodPolygonByYear = {
+        2026: [
+            [lat - 0.0130, lng - 0.0180],
+            [lat - 0.0115, lng - 0.0100],
+            [lat - 0.0105, lng - 0.0050],
+            [lat - 0.0100, lng + 0.0000],
+            [lat - 0.0105, lng + 0.0050],
+            [lat - 0.0115, lng + 0.0100],
+            [lat - 0.0130, lng + 0.0180],
+            [lat - 0.0180, lng + 0.0200],
+            [lat - 0.0180, lng - 0.0200],
+        ],
+        2030: [
+            [lat - 0.0130, lng - 0.0180],
+            [lat - 0.0108, lng - 0.0110],
+            [lat - 0.0095, lng - 0.0060],
+            [lat - 0.0088, lng + 0.0000],
+            [lat - 0.0095, lng + 0.0060],
+            [lat - 0.0108, lng + 0.0110],
+            [lat - 0.0130, lng + 0.0180],
+            [lat - 0.0180, lng + 0.0200],
+            [lat - 0.0180, lng - 0.0200],
+        ],
+        2035: [
+            [lat - 0.0130, lng - 0.0180],
+            [lat - 0.0100, lng - 0.0120],
+            [lat - 0.0083, lng - 0.0070],
+            [lat - 0.0075, lng + 0.0000],
+            [lat - 0.0083, lng + 0.0070],
+            [lat - 0.0100, lng + 0.0120],
+            [lat - 0.0130, lng + 0.0180],
+            [lat - 0.0180, lng + 0.0200],
+            [lat - 0.0180, lng - 0.0200],
+        ],
+        2040: [
+            [lat - 0.0130, lng - 0.0190],
+            [lat - 0.0090, lng - 0.0130],
+            [lat - 0.0070, lng - 0.0080],
+            [lat - 0.0062, lng + 0.0000],
+            [lat - 0.0070, lng + 0.0080],
+            [lat - 0.0090, lng + 0.0130],
+            [lat - 0.0130, lng + 0.0190],
+            [lat - 0.0180, lng + 0.0210],
+            [lat - 0.0180, lng - 0.0210],
+        ],
+        2045: [
+            [lat - 0.0130, lng - 0.0200],
+            [lat - 0.0078, lng - 0.0140],
+            [lat - 0.0058, lng - 0.0090],
+            [lat - 0.0050, lng + 0.0000],
+            [lat - 0.0058, lng + 0.0090],
+            [lat - 0.0078, lng + 0.0140],
+            [lat - 0.0130, lng + 0.0200],
+            [lat - 0.0180, lng + 0.0220],
+            [lat - 0.0180, lng - 0.0220],
+        ],
+        2050: [
+            [lat - 0.0130, lng - 0.0210],
+            [lat - 0.0065, lng - 0.0150],
+            [lat - 0.0045, lng - 0.0100],
+            [lat - 0.0038, lng + 0.0000],
+            [lat - 0.0045, lng + 0.0100],
+            [lat - 0.0065, lng + 0.0150],
+            [lat - 0.0130, lng + 0.0210],
+            [lat - 0.0180, lng + 0.0230],
+            [lat - 0.0180, lng - 0.0230],
+        ],
+        2060: [
+            [lat - 0.0130, lng - 0.0220],
+            [lat - 0.0050, lng - 0.0160],
+            [lat - 0.0030, lng - 0.0110],
+            [lat - 0.0022, lng + 0.0000],
+            [lat - 0.0030, lng + 0.0110],
+            [lat - 0.0050, lng + 0.0160],
+            [lat - 0.0130, lng + 0.0220],
+            [lat - 0.0180, lng + 0.0240],
+            [lat - 0.0180, lng - 0.0240],
+        ],
+        2075: [
+            [lat - 0.0130, lng - 0.0230],
+            [lat - 0.0030, lng - 0.0170],
+            [lat - 0.0010, lng - 0.0120],
+            [lat + 0.0000, lng + 0.0000],
+            [lat - 0.0010, lng + 0.0120],
+            [lat - 0.0030, lng + 0.0170],
+            [lat - 0.0130, lng + 0.0230],
+            [lat - 0.0180, lng + 0.0250],
+            [lat - 0.0180, lng - 0.0250],
+        ]
+    }
+
+    const floodPolygon = floodPolygonByYear[year]
+
+    return (
+        <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
+            <div className="bg-slate-900 border-b border-slate-800 p-3 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={onBack}
+                            className="text-slate-400 hover:text-white text-sm px-3 py-1 rounded hover:bg-slate-800 transition-colors"
+                        >
+                            ← All villages
+                        </button>
+                        <div>
+                            <h1 className="text-lg font-bold">{village.name}, {village.country}</h1>
+                            <div className="text-xs text-slate-400">{village.region} · {village.population} people</div>
+                        </div>
                     </div>
-                    <div className="text-sm">Click marker to view details</div>
-                  </Popup>
-                </CircleMarker>
-              )
-            })}
-          </MapContainer>
-        </div>
+                </div>
+            </div>
 
-        <div className="w-96 bg-slate-900 border-l border-slate-800 overflow-y-auto">
-          {selectedAsset ? (
-            <AssetPanel
-              asset={selectedAsset}
-              year={year}
-              village={village}
-              appliedAdaptations={appliedAdaptations}
-              onClose={() => setSelectedAsset(null)}
-              onApplyAdaptation={(id) => {
-                setAppliedAdaptations([...appliedAdaptations, id])
-              }}
-            />
-          ) : (
-            <Statistics
-              assets={villageAssets}
-              year={year}
-              appliedAdaptations={appliedAdaptations}
-            />
-          )}
-        </div>
-      </div>
+            <div className="flex-1 flex p-4 gap-4 overflow-hidden">
+                <div className="flex-1 relative map-container-frame overflow-hidden">
+                    <MapContainer
+                        center={village.coordinates}
+                        zoom={16}
+                        minZoom={14}
+                        maxZoom={19}
+                        scrollWheelZoom={true}
+                        key={village.id}
+                        className="h-full w-full"
+                        maxBounds={[
+                            [village.coordinates[0] - 0.03, village.coordinates[1] - 0.03],
+                            [village.coordinates[0] + 0.03, village.coordinates[1] + 0.03]
+                        ]}
+                        maxBoundsViscosity={1.0}
+                    >
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; OpenStreetMap contributors &copy; CARTO | Climate data: IPCC AR6'
+                            subdomains="abcd"
+                        />
 
-      <TimeSlider year={year} onChange={setYear} />
-    </div>
-  )
+                        <Polygon
+                            positions={floodPolygon}
+                            pathOptions={{
+                                color: '#3b82f6',
+                                fillColor: '#1e40af',
+                                fillOpacity: 0.55,
+                                weight: 2,
+                                dashArray: '5, 5'
+                            }}
+                        >
+                            <Tooltip sticky opacity={0.9}>
+                                <div style={{ fontWeight: 600 }}>Projected inundation zone</div>
+                                <div style={{ fontSize: '11px' }}>Sea level +{seaLevelMeters}m by {year}</div>
+                            </Tooltip>
+                        </Polygon>
+
+                        {villageAssets.map(asset => {
+                            const status = getAssetStatus(asset, year, appliedAdaptations)
+                            const icon = L.divIcon({
+                                className: `custom-asset-marker ${status === 'destroyed' ? 'destroyed' : ''}`,
+                                html: `
+                  <div style="
+                    background: ${STATUS_COLORS[status]};
+                    border: 3px solid white;
+                    border-radius: 50%;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+                    cursor: pointer;
+                  ">${ASSET_ICONS[asset.type]}</div>
+                `,
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 16]
+                            })
+
+                            return (
+                                <Marker
+                                    key={asset.id}
+                                    position={asset.coordinates}
+                                    icon={icon}
+                                    eventHandlers={{ click: () => setSelectedAsset(asset) }}
+                                >
+                                    <Tooltip direction="top" offset={[0, -16]} opacity={0.9}>
+                                        <span className="text-sm font-semibold">{asset.name}</span>
+                                    </Tooltip>
+                                </Marker>
+                            )
+                        })}
+                    </MapContainer>
+
+                    <div className="sea-level-badge">
+                        <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>
+                            🌊 SEA LEVEL RISE
+                        </div>
+                        <div className="value" style={{ fontSize: '28px', lineHeight: '1' }}>
+                            +{seaLevelMeters}m
+                        </div>
+                        <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
+                            vs 2020 baseline
+                        </div>
+                        <div style={{ fontSize: '10px', opacity: 0.5, marginTop: '2px', fontStyle: 'italic' }}>
+                            IPCC AR6 SSP2-4.5
+                        </div>
+                    </div>
+                </div>
+
+                <div className="w-96 bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto">
+                        {selectedAsset ? (
+                            <AssetPanel
+                                asset={selectedAsset}
+                                year={year}
+                                village={village}
+                                appliedAdaptations={appliedAdaptations}
+                                onClose={() => setSelectedAsset(null)}
+                                onApplyAdaptation={(id) => {
+                                    setAppliedAdaptations([...appliedAdaptations, id])
+                                }}
+                            />
+                        ) : (
+                            <Statistics
+                                assets={villageAssets}
+                                year={year}
+                                appliedAdaptations={appliedAdaptations}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-shrink-0">
+                <TimeSlider year={year} onChange={setYear} />
+            </div>
+        </div>
+    )
 }

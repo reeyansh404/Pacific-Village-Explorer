@@ -3,20 +3,26 @@ import { villages } from '../data/villages'
 
 export default function Homepage({ onSelectVillage }) {
   return (
-    <div className="h-screen flex flex-col">
-      <div className="bg-slate-900 border-b border-slate-800 p-6">
+    <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
+      <div className="bg-slate-900 border-b border-slate-800 p-4 flex-shrink-0">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold">🌊 Pacific Village Explorer</h1>
-          <p className="text-slate-400 mt-1">See your village's climate future. Plan the adaptations that change it.</p>
+          <h1 className="text-2xl font-bold">🌊 Pacific Village Explorer</h1>
+          <p className="text-slate-400 text-sm mt-1">See your village's climate future. Plan the adaptations that change it.</p>
         </div>
       </div>
 
-      <div className="flex-1 flex">
-        <div className="flex-1">
+      <div className="flex-1 flex p-4 gap-4 overflow-hidden">
+        <div className="flex-1 map-container-frame overflow-hidden">
           <MapContainer
             center={[-15, 175]}
             zoom={4}
+            minZoom={3}
+            maxZoom={7}
+            scrollWheelZoom={true}
             className="h-full w-full"
+            maxBounds={[[-50, 110], [15, 220]]}
+            maxBoundsViscosity={1.0}
+            worldCopyJump={true}
           >
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -37,11 +43,13 @@ export default function Homepage({ onSelectVillage }) {
           </MapContainer>
         </div>
 
-        <div className="w-96 bg-slate-900 border-l border-slate-800 overflow-y-auto">
-          <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Pacific Villages</h2>
-            <p className="text-sm text-slate-400 mb-4">Select a village to explore its climate future.</p>
+        <div className="w-96 bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-slate-800 flex-shrink-0">
+            <h2 className="text-xl font-bold">Pacific Villages</h2>
+            <p className="text-sm text-slate-400 mt-1">Select a village to explore its climate future.</p>
+          </div>
 
+          <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-3">
               {villages.map(v => (
                 <div

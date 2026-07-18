@@ -1,6 +1,204 @@
 import { useState } from 'react'
 import { STATUS_COLORS, STATUS_LABELS, ASSET_ICONS, ASSET_LABELS, getAssetStatus, getAssetNote } from '../utils/statusHelpers'
 
+// Mock adaptations by asset type for demo when API is unavailable
+const MOCK_ADAPTATIONS = {
+  water: [
+    {
+      name: 'Rainwater Harvesting System',
+      description: 'Install rooftop rainwater collection with 5000L community storage tanks',
+      cost_estimate_usd: 1500,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 3,
+      cultural_considerations: 'Traditional well preserved as ceremonial site while modern collection provides drinking water'
+    },
+    {
+      name: 'Elevated Well with Salt Barrier',
+      description: 'Raise well opening 1.5m above ground with clay-lined salt barrier',
+      cost_estimate_usd: 3000,
+      community_effort: 'high',
+      effectiveness: 'medium',
+      implementation_time_months: 4,
+      cultural_considerations: 'Community elders lead the traditional blessing before construction begins'
+    },
+    {
+      name: 'Community Water Filtration',
+      description: 'Solar-powered desalination unit for 45 households, maintained by trained villagers',
+      cost_estimate_usd: 8000,
+      community_effort: 'low',
+      effectiveness: 'high',
+      implementation_time_months: 6,
+      cultural_considerations: 'Two villagers trained as maintainers, ensuring skills stay in community'
+    }
+  ],
+  house: [
+    {
+      name: 'Stilted Foundation Rebuild',
+      description: 'Elevate structure on hardwood stilts 2m above ground level',
+      cost_estimate_usd: 4500,
+      community_effort: 'high',
+      effectiveness: 'high',
+      implementation_time_months: 4,
+      cultural_considerations: 'Traditional bure design preserved with modern flood-resistant foundation'
+    },
+    {
+      name: 'Cyclone-Resistant Reinforcement',
+      description: 'Add hurricane straps, storm shutters, and reinforced roof structure',
+      cost_estimate_usd: 2000,
+      community_effort: 'medium',
+      effectiveness: 'medium',
+      implementation_time_months: 2,
+      cultural_considerations: 'Community-led installation using locally-sourced materials where possible'
+    },
+    {
+      name: 'Managed Relocation Support',
+      description: 'Gradual family relocation to higher-ground community land with cultural site preservation',
+      cost_estimate_usd: 12000,
+      community_effort: 'high',
+      effectiveness: 'high',
+      implementation_time_months: 18,
+      cultural_considerations: 'Ancestral connection to land honored through documented cultural memory transfer'
+    }
+  ],
+  farm: [
+    {
+      name: 'Salt-Tolerant Crop Varieties',
+      description: 'Transition to salt-tolerant taro cultivars and traditional root crops',
+      cost_estimate_usd: 800,
+      community_effort: 'low',
+      effectiveness: 'high',
+      implementation_time_months: 6,
+      cultural_considerations: 'Traditional planting practices preserved with new cultivar varieties'
+    },
+    {
+      name: 'Raised Bed Farming System',
+      description: 'Construct raised planting beds with drainage above flood level',
+      cost_estimate_usd: 2500,
+      community_effort: 'high',
+      effectiveness: 'medium',
+      implementation_time_months: 4,
+      cultural_considerations: 'Community farming traditions maintained with new bed design'
+    },
+    {
+      name: 'Aquaculture Transition',
+      description: 'Convert flooded areas to fish farming ponds for food security',
+      cost_estimate_usd: 5000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 8,
+      cultural_considerations: 'Elder fishermen lead training in sustainable aquaculture practices'
+    }
+  ],
+  sacred: [
+    {
+      name: 'Digital Cultural Preservation',
+      description: 'Document sacred site with 3D scanning and oral history recording',
+      cost_estimate_usd: 3000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 4,
+      cultural_considerations: 'Elders lead the recording process ensuring cultural knowledge is preserved authentically'
+    },
+    {
+      name: 'Protective Sea Wall',
+      description: 'Traditional stone-and-mangrove barrier protecting sacred boundary',
+      cost_estimate_usd: 6000,
+      community_effort: 'high',
+      effectiveness: 'medium',
+      implementation_time_months: 8,
+      cultural_considerations: 'Traditional Fijian stone-fitting techniques used, blessed by chief before construction'
+    },
+    {
+      name: 'Managed Ceremonial Relocation',
+      description: 'Community ceremony to establish new sacred site with continuous cultural connection',
+      cost_estimate_usd: 4000,
+      community_effort: 'high',
+      effectiveness: 'high',
+      implementation_time_months: 12,
+      cultural_considerations: 'Full traditional protocol observed, elders and chief lead relocation ceremony'
+    }
+  ],
+  school: [
+    {
+      name: 'Storm-Shelter Upgrade',
+      description: 'Reinforce school as community cyclone shelter with backup power',
+      cost_estimate_usd: 5000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 6,
+      cultural_considerations: 'Dual function preserves community gathering role of school'
+    },
+    {
+      name: 'Elevated Classroom Extension',
+      description: 'Add raised classroom block above flood level for continued education',
+      cost_estimate_usd: 8000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 8,
+      cultural_considerations: 'Local materials and craftsmanship prioritized in construction'
+    },
+    {
+      name: 'Distance Learning Infrastructure',
+      description: 'Solar-powered connectivity for online classes during closures',
+      cost_estimate_usd: 3500,
+      community_effort: 'low',
+      effectiveness: 'medium',
+      implementation_time_months: 3,
+      cultural_considerations: 'Local teacher training ensures technology serves village needs'
+    }
+  ],
+  reef: [
+    {
+      name: 'Coral Restoration Program',
+      description: 'Community-led coral fragment nursery and replanting initiative',
+      cost_estimate_usd: 4000,
+      community_effort: 'high',
+      effectiveness: 'medium',
+      implementation_time_months: 12,
+      cultural_considerations: 'Traditional fishing knowledge combined with modern restoration techniques'
+    },
+    {
+      name: 'Alternative Fishing Grounds',
+      description: 'Community-managed marine protected area with rotational fishing zones',
+      cost_estimate_usd: 1500,
+      community_effort: 'medium',
+      effectiveness: 'medium',
+      implementation_time_months: 6,
+      cultural_considerations: 'Traditional taboo (tabu) practices formalized for sustainable management'
+    },
+    {
+      name: 'Aquaculture Development',
+      description: 'Establish sustainable aquaculture for continued food security',
+      cost_estimate_usd: 6000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 10,
+      cultural_considerations: 'Elder fishermen guide species selection and cultural practices'
+    }
+  ],
+  road: [
+    {
+      name: 'Elevated Road Reconstruction',
+      description: 'Raise road bed 1m with improved drainage culverts',
+      cost_estimate_usd: 7000,
+      community_effort: 'medium',
+      effectiveness: 'high',
+      implementation_time_months: 6,
+      cultural_considerations: 'Community labor prioritized, road path preserves cultural landmarks'
+    },
+    {
+      name: 'Alternative Inland Route',
+      description: 'New access route via higher-ground path connecting to district road',
+      cost_estimate_usd: 5000,
+      community_effort: 'high',
+      effectiveness: 'medium',
+      implementation_time_months: 8,
+      cultural_considerations: 'Route negotiated through community land with elder consultation'
+    }
+  ]
+}
+
 export default function AssetPanel({ asset, year, village, appliedAdaptations, onClose, onApplyAdaptation }) {
   const [adaptations, setAdaptations] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -24,17 +222,22 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
           threat: note
         })
       })
-      if (!res.ok) throw new Error('Failed to fetch adaptations')
+      if (!res.ok) throw new Error('API unavailable')
       const data = await res.json()
       setAdaptations(data.adaptations)
     } catch (err) {
-      setError(err.message)
+      // Fallback to mock adaptations for demo
+      console.log('Using mock adaptations for demo')
+      setTimeout(() => {
+        const mockData = MOCK_ADAPTATIONS[asset.type] || MOCK_ADAPTATIONS.house
+        setAdaptations(mockData)
+      }, 800) // Simulate API delay for realistic feel
     }
     setLoading(false)
   }
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
+    <div className="p-6 h-full">
       <button
         onClick={onClose}
         className="text-slate-400 hover:text-white mb-4 text-sm"
@@ -93,13 +296,6 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
         <div className="text-center py-8">
           <div className="text-slate-400">Generating adaptation recommendations...</div>
           <div className="text-xs text-slate-500 mt-2">Tailored to {village.name}'s context</div>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-900 bg-opacity-30 border border-red-800 rounded-lg p-4 text-sm text-red-400">
-          {error}
-          <button onClick={fetchAdaptations} className="block mt-2 underline">Try again</button>
         </div>
       )}
 
