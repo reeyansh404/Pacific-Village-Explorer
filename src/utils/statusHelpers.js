@@ -20,7 +20,9 @@ export const ASSET_ICONS = {
   sacred: '⚱️',
   school: '🏫',
   reef: '🪸',
-  road: '🛤️'
+  road: '🛤️',
+  hospital: '🏥',
+  fishing: '🎣'
 }
 
 // SVG icons (used by map markers)
@@ -41,7 +43,9 @@ export const ASSET_LABELS = {
   sacred: 'Sacred Site',
   school: 'School',
   reef: 'Reef',
-  road: 'Road'
+  road: 'Road',
+  hospital: 'Health Facility',
+  fishing: 'Fishing Ground'
 }
 
 export const SEA_LEVEL_RISE_METERS = {

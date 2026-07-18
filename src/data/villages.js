@@ -1,7 +1,7 @@
 export const villages = [
     {
         id: 'nakawaqa',
-        name: 'Nakawaqa',
+        name: 'Muanikau',
         country: 'Fiji',
         region: 'Sigatoka coast, southern Viti Levu',
         population: 300,
