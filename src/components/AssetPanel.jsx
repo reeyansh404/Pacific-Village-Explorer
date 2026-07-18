@@ -1,5 +1,15 @@
 import { useState } from 'react'
-import { STATUS_COLORS, STATUS_LABELS, ASSET_ICONS, ASSET_LABELS, getAssetStatus, getAssetNote } from '../utils/statusHelpers'
+import { ArrowLeft, RotateCcw } from 'lucide-react'
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  STATUS_INFO,
+  ASSET_ICONS,
+  ASSET_LABELS,
+  ASSET_WHY_IT_MATTERS,
+  getAssetStatus,
+  getAssetNote
+} from '../utils/statusHelpers'
 
 // Mock adaptations by asset type for demo when API is unavailable
 const MOCK_ADAPTATIONS = {
@@ -199,7 +209,7 @@ const MOCK_ADAPTATIONS = {
   ]
 }
 
-export default function AssetPanel({ asset, year, village, appliedAdaptations, onClose, onApplyAdaptation }) {
+export default function AssetPanel({ asset, year, village, appliedAdaptations, appliedAdaptationNames, onClose, onApplyAdaptation, onRemoveAdaptation }) {
   const [adaptations, setAdaptations] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -207,6 +217,7 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
   const status = getAssetStatus(asset, year, appliedAdaptations)
   const note = getAssetNote(asset, year, appliedAdaptations)
   const isProtected = appliedAdaptations.includes(asset.id)
+  const statusInfo = STATUS_INFO[status]
 
   const fetchAdaptations = async () => {
     setLoading(true)
@@ -240,9 +251,10 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
     <div className="p-6 h-full">
       <button
         onClick={onClose}
-        className="text-slate-400 hover:text-white mb-4 text-sm"
+        className="flex items-center gap-1.5 text-slate-400 hover:text-white mb-4 text-sm"
       >
-        ← Back to overview
+        <ArrowLeft className="w-4 h-4" />
+        Back to overview
       </button>
 
       <div className="mb-4">
@@ -262,24 +274,47 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
         </div>
       )}
 
-      <div className="bg-slate-800 rounded-lg p-4 mb-4">
+      <div className="bg-slate-800 rounded-lg p-4 mb-3">
         <p className="text-sm text-slate-300">{asset.description}</p>
       </div>
 
-      <div className="mb-4">
+      {/* Why this matters — plain language, no jargon */}
+      <div className="bg-slate-800/60 border border-slate-700 rounded-lg p-3 mb-4">
+        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Why this matters</div>
+        <p className="text-sm text-slate-300">{ASSET_WHY_IT_MATTERS[asset.type]}</p>
+      </div>
+
+      <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: `${STATUS_COLORS[status]}1a`, border: `1px solid ${STATUS_COLORS[status]}55` }}>
         <div className="text-sm text-slate-400 mb-1">Status in {year}</div>
-        <div
-          className="text-2xl font-bold"
-          style={{ color: STATUS_COLORS[status] }}
-        >
-          {STATUS_LABELS[status]}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-2xl">{statusInfo.emoji}</span>
+          <div>
+            <div className="text-xl font-bold" style={{ color: STATUS_COLORS[status] }}>
+              {STATUS_LABELS[status]} — {statusInfo.headline}
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-slate-300 mt-2 italic">{note}</p>
+        <p className="text-sm text-slate-300">{statusInfo.explain}</p>
+        {note && <p className="text-sm text-slate-400 mt-2 italic">"{note}"</p>}
       </div>
 
       {isProtected && (
         <div className="bg-green-900 bg-opacity-30 border border-green-800 rounded-lg p-3 mb-4">
-          <div className="text-sm text-green-400">✓ Community adaptation applied</div>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-green-400 mb-0.5">✓ Protected</div>
+              <div className="text-xs text-slate-300">
+                {village.name}'s community built{appliedAdaptationNames?.[asset.id] ? `: ${appliedAdaptationNames[asset.id]}` : ' a protection for this place'}.
+              </div>
+            </div>
+            <button
+              onClick={() => onRemoveAdaptation(asset.id)}
+              className="flex items-center gap-1.5 flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Undo
+            </button>
+          </div>
         </div>
       )}
 
@@ -288,27 +323,28 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
           onClick={fetchAdaptations}
           className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
         >
-          Get Adaptation Options
+          What can the village do about this?
         </button>
       )}
 
       {loading && (
         <div className="text-center py-8">
-          <div className="text-slate-400">Generating adaptation recommendations...</div>
+          <div className="text-slate-400">Thinking of ways to help...</div>
           <div className="text-xs text-slate-500 mt-2">Tailored to {village.name}'s context</div>
         </div>
       )}
 
-      {adaptations && (
+      {adaptations && !isProtected && (
         <div>
-          <h3 className="text-lg font-semibold mb-3">Recommended Adaptations</h3>
+          <h3 className="text-lg font-semibold mb-1">Ways to help</h3>
+          <p className="text-xs text-slate-400 mb-3">Pick one the village could realistically build. You can undo it any time.</p>
           <div className="space-y-3">
             {adaptations.map((a, i) => (
               <AdaptationCard
                 key={i}
                 adaptation={a}
-                onApply={() => onApplyAdaptation(asset.id)}
-                isApplied={isProtected}
+                onApply={() => onApplyAdaptation(asset.id, a.name)}
+                recommended={i === 0}
               />
             ))}
           </div>
@@ -318,59 +354,67 @@ export default function AssetPanel({ asset, year, village, appliedAdaptations, o
   )
 }
 
-function AdaptationCard({ adaptation, onApply, isApplied }) {
-  const effortColor = {
-    low: 'text-green-400',
-    medium: 'text-yellow-400',
-    high: 'text-red-400'
+function AdaptationCard({ adaptation, onApply, recommended }) {
+  const effortMeta = {
+    low: { label: 'Easy for the village to build', color: 'text-green-400' },
+    medium: { label: 'Takes real community effort', color: 'text-yellow-400' },
+    high: { label: 'A big undertaking for the village', color: 'text-red-400' }
   }
 
-  const effectivenessColor = {
-    low: 'text-red-400',
-    medium: 'text-yellow-400',
-    high: 'text-green-400'
+  const effectivenessMeta = {
+    low: { label: 'Helps a little', color: 'text-red-400' },
+    medium: { label: 'Helps a fair amount', color: 'text-yellow-400' },
+    high: { label: 'Protects very well', color: 'text-green-400' }
   }
+
+  const effort = effortMeta[adaptation.community_effort] || effortMeta.medium
+  const effectiveness = effectivenessMeta[adaptation.effectiveness] || effectivenessMeta.medium
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+    <div className={`bg-slate-800 rounded-lg p-4 border ${recommended ? 'border-blue-600' : 'border-slate-700'}`}>
+      {recommended && (
+        <div className="inline-block text-[10px] font-bold uppercase tracking-wide text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded mb-2">
+          Suggested first
+        </div>
+      )}
+
       <div className="font-semibold text-lg mb-1">{adaptation.name}</div>
       <p className="text-sm text-slate-300 mb-3">{adaptation.description}</p>
 
-      <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+      <div className="grid grid-cols-2 gap-3 text-xs mb-3 bg-slate-900/50 rounded-lg p-3">
         <div>
-          <div className="text-slate-500">Cost</div>
-          <div className="font-semibold">${adaptation.cost_estimate_usd?.toLocaleString() || 'N/A'}</div>
+          <div className="text-slate-500 mb-0.5">How well it works</div>
+          <div className={`font-semibold ${effectiveness.color}`}>{effectiveness.label}</div>
         </div>
         <div>
-          <div className="text-slate-500">Time</div>
-          <div className="font-semibold">{adaptation.implementation_time_months} months</div>
+          <div className="text-slate-500 mb-0.5">Effort needed</div>
+          <div className={`font-semibold ${effort.color}`}>{effort.label}</div>
         </div>
         <div>
-          <div className="text-slate-500">Community Effort</div>
-          <div className={`font-semibold ${effortColor[adaptation.community_effort]}`}>
-            {adaptation.community_effort}
-          </div>
+          <div className="text-slate-500 mb-0.5">Roughly costs</div>
+          <div className="font-semibold text-slate-200">${adaptation.cost_estimate_usd?.toLocaleString() || 'N/A'}</div>
         </div>
         <div>
-          <div className="text-slate-500">Effectiveness</div>
-          <div className={`font-semibold ${effectivenessColor[adaptation.effectiveness]}`}>
-            {adaptation.effectiveness}
+          <div className="text-slate-500 mb-0.5">Time to build</div>
+          <div className="font-semibold text-slate-200">
+            {adaptation.implementation_time_months} {adaptation.implementation_time_months === 1 ? 'month' : 'months'}
           </div>
         </div>
       </div>
 
-      <div className="text-xs text-slate-400 italic mb-3">
-        🏛️ {adaptation.cultural_considerations}
-      </div>
-
-      {!isApplied && (
-        <button
-          onClick={onApply}
-          className="w-full bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded text-sm font-semibold transition-colors"
-        >
-          Apply This Adaptation
-        </button>
+      {adaptation.cultural_considerations && (
+        <div className="flex items-start gap-1.5 text-xs text-slate-400 mb-3">
+          <span>🏛️</span>
+          <span className="italic">{adaptation.cultural_considerations}</span>
+        </div>
       )}
+
+      <button
+        onClick={onApply}
+        className="w-full bg-green-600 hover:bg-green-500 text-white px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+      >
+        Build this to protect it
+      </button>
     </div>
   )
 }

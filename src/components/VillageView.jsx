@@ -1,17 +1,21 @@
 import { useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polygon } from 'react-leaflet'
+import { ArrowLeft } from 'lucide-react'
 import L from 'leaflet'
 import { assets } from '../data/assets'
-import { STATUS_COLORS, ASSET_SVG, getAssetStatus, SEA_LEVEL_RISE_METERS } from '../utils/statusHelpers'
+import { STATUS_COLORS, ASSET_SVG, ASSET_LABELS, getAssetStatus, SEA_LEVEL_RISE_METERS } from '../utils/statusHelpers'
 import TimeSlider from './TimeSlider'
 import Statistics from './Statistics'
 import AssetPanel from './AssetPanel'
+import AdaptationConfirmModal from './AdaptationConfirmModal'
 
 export default function VillageView({ village, onBack }) {
   const [year, setYear] = useState(2026)
   const [selectedAsset, setSelectedAsset] = useState(null)
-  const [appliedAdaptations, setAppliedAdaptations] = useState([])
+  const [appliedAdaptations, setAppliedAdaptations] = useState([]) // asset ids currently protected
+  const [appliedAdaptationNames, setAppliedAdaptationNames] = useState({}) // assetId -> adaptation name, for display only
   const [filterType, setFilterType] = useState(null)
+  const [confirmation, setConfirmation] = useState(null) // { mode: 'applied' | 'removed', assetName, adaptationName }
 
   const allVillageAssets = assets.filter(a => a.villageId === village.id)
   const villageAssets = filterType
@@ -90,9 +94,10 @@ export default function VillageView({ village, onBack }) {
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="text-slate-400 hover:text-white text-sm px-3 py-1 rounded hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm px-3 py-1 rounded hover:bg-slate-800 transition-colors"
           >
-            ← All villages
+            <ArrowLeft className="w-4 h-4" />
+            All villages
           </button>
           <div>
             <h1 className="text-base font-bold">{village.name}, {village.country}</h1>
@@ -190,7 +195,7 @@ export default function VillageView({ village, onBack }) {
 
           {filterType && (
             <div className="absolute top-4 left-16 bg-blue-900 bg-opacity-90 border border-blue-700 px-3 py-1 rounded-lg text-xs text-white z-500">
-              Filtered: {filterType}
+              Showing: {ASSET_LABELS[filterType]}
             </div>
           )}
         </div>
@@ -203,9 +208,16 @@ export default function VillageView({ village, onBack }) {
                 year={year}
                 village={village}
                 appliedAdaptations={appliedAdaptations}
+                appliedAdaptationNames={appliedAdaptationNames}
                 onClose={() => setSelectedAsset(null)}
-                onApplyAdaptation={(id) => {
-                  setAppliedAdaptations([...appliedAdaptations, id])
+                onApplyAdaptation={(assetId, adaptationName) => {
+                  setAppliedAdaptations(prev => [...prev, assetId])
+                  setAppliedAdaptationNames(prev => ({ ...prev, [assetId]: adaptationName }))
+                  setConfirmation({ mode: 'applied', assetName: selectedAsset.name, adaptationName })
+                }}
+                onRemoveAdaptation={(assetId) => {
+                  setAppliedAdaptations(prev => prev.filter(id => id !== assetId))
+                  setConfirmation({ mode: 'removed', assetName: selectedAsset.name })
                 }}
               />
             ) : (
@@ -224,6 +236,15 @@ export default function VillageView({ village, onBack }) {
       <div className="flex-shrink-0">
         <TimeSlider year={year} onChange={setYear} />
       </div>
+
+      {confirmation && (
+        <AdaptationConfirmModal
+          mode={confirmation.mode}
+          assetName={confirmation.assetName}
+          adaptationName={confirmation.adaptationName}
+          onClose={() => setConfirmation(null)}
+        />
+      )}
     </div>
   )
 }
