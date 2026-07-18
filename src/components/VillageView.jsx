@@ -8,6 +8,8 @@ import TimeSlider from './TimeSlider'
 import Statistics from './Statistics'
 import AssetPanel from './AssetPanel'
 import AdaptationConfirmModal from './AdaptationConfirmModal'
+import CoastlineTracerPanel, { CoastlineTraceLayer } from './CoastlineTracer'
+import { buildTracedFloodPolygon, TRACED_COASTLINE_VILLAGE_ID } from '../utils/coastline'
 
 export default function VillageView({ village, onBack }) {
   const [year, setYear] = useState(2026)
@@ -16,6 +18,8 @@ export default function VillageView({ village, onBack }) {
   const [appliedAdaptationNames, setAppliedAdaptationNames] = useState({}) // assetId -> adaptation name, for display only
   const [filterType, setFilterType] = useState(null)
   const [confirmation, setConfirmation] = useState(null) // { mode: 'applied' | 'removed', assetName, adaptationName }
+  const [tracing, setTracing] = useState(false)
+  const [tracedPoints, setTracedPoints] = useState([])
 
   const allVillageAssets = assets.filter(a => a.villageId === village.id)
   const villageAssets = filterType
@@ -27,7 +31,10 @@ export default function VillageView({ village, onBack }) {
   const lat = village.coordinates[0]
   const lng = village.coordinates[1]
 
-  const floodPolygonByYear = {
+  // Fallback shape (hand-picked offsets from the village centre) — used for
+  // any village other than the one we actually traced a real coastline for,
+  // since those don't have asset data or a traced shoreline yet.
+  const fallbackFloodPolygonByYear = {
     2026: [
       [lat - 0.0130, lng - 0.0180], [lat - 0.0115, lng - 0.0100],
       [lat - 0.0105, lng - 0.0050], [lat - 0.0100, lng + 0.0000],
@@ -86,7 +93,12 @@ export default function VillageView({ village, onBack }) {
     ]
   }
 
-  const floodPolygon = floodPolygonByYear[year]
+  // Muanikau (Nakawaqa) gets the real traced coastline; every other village
+  // falls back to the approximate hand-tuned shape until someone traces
+  // theirs too.
+  const floodPolygon = village.id === TRACED_COASTLINE_VILLAGE_ID
+    ? buildTracedFloodPolygon(year)
+    : fallbackFloodPolygonByYear[year]
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
@@ -144,6 +156,12 @@ export default function VillageView({ village, onBack }) {
               </Tooltip>
             </Polygon>
 
+            <CoastlineTraceLayer
+              active={tracing}
+              points={tracedPoints}
+              onPoint={p => setTracedPoints(prev => [...prev, p])}
+            />
+
             {villageAssets.map(asset => {
               const status = getAssetStatus(asset, year, appliedAdaptations)
               const icon = L.divIcon({
@@ -198,6 +216,14 @@ export default function VillageView({ village, onBack }) {
               Showing: {ASSET_LABELS[filterType]}
             </div>
           )}
+
+          <CoastlineTracerPanel
+            tracing={tracing}
+            onToggle={() => setTracing(t => !t)}
+            points={tracedPoints}
+            onUndo={() => setTracedPoints(prev => prev.slice(0, -1))}
+            onClear={() => setTracedPoints([])}
+          />
         </div>
 
         <div className="w-96 bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
