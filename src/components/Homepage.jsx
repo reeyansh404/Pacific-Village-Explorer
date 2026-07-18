@@ -31,7 +31,7 @@ export default function Homepage({ onSelectVillage }) {
 
           <div className="flex-1 map-container-frame overflow-hidden">
             <MapContainer
-              center={[-15, 175]}
+              center={[-11, 184]}
               zoom={4}
               minZoom={3}
               maxZoom={7}
@@ -49,7 +49,7 @@ export default function Homepage({ onSelectVillage }) {
               {villages.map(v => (
                 <Marker
                   key={v.id}
-                  position={v.coordinates}
+                  position={[v.coordinates[0], v.coordinates[1] < 0 ? v.coordinates[1] + 360 : v.coordinates[1]]}
                   eventHandlers={{ click: () => onSelectVillage(v) }}
                 >
                   <Popup>
