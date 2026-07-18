@@ -19,7 +19,9 @@ export const ASSET_ICONS = {
   sacred: '⚱️',
   school: '🏫',
   reef: '🪸',
-  road: '🛤️'
+  road: '🛤️',
+  hospital: '🏥',
+  fishing: '🎣'
 }
 
 export const ASSET_LABELS = {
@@ -29,7 +31,9 @@ export const ASSET_LABELS = {
   sacred: 'Sacred Site',
   school: 'School',
   reef: 'Reef',
-  road: 'Road'
+  road: 'Road',
+  hospital: 'Health Facility',
+  fishing: 'Fishing Ground'
 }
 
 // Sea level rise projections in meters (IPCC AR6 SSP2-4.5 for Pacific region)
