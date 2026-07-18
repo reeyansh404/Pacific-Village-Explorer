@@ -1,13 +1,42 @@
+import { useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { villages } from '../data/villages'
-import { Waves, Building2, Users } from 'lucide-react'
+import { Waves, Building2, Users, Languages } from 'lucide-react'
+
+// Languages spoken across the five villages.
+const LANGUAGES = [
+  { code: 'en',  native: 'English' },
+  { code: 'fj',  native: 'Na Vosa Vakaviti' },
+  { code: 'sm',  native: 'Gagana Samoa' },
+  { code: 'bi',  native: 'Bislama' },
+  { code: 'tvl', native: 'Te Ggana Tuvalu' },
+  { code: 'gil', native: 'Taetae ni Kiribati' },
+]
 
 export default function Homepage({ onSelectVillage }) {
+  const [lang, setLang] = useState('en')
+
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
       <div className="bg-slate-900 border-b border-slate-800 p-4 flex-shrink-0">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Pacific Village Explorer</h1>
+
+          <div className="flex items-center gap-2">
+            <Languages className="w-4 h-4 text-slate-400" />
+            <select
+              value={lang}
+              onChange={e => setLang(e.target.value)}
+              className="bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200
+                         hover:border-slate-500 focus:outline-none focus:border-blue-500"
+            >
+              {LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>
+                  {l.native}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
