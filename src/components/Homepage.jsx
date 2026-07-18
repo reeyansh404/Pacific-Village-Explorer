@@ -389,21 +389,31 @@ export default function Homepage({ onSelectVillage }) {
 
       <div className="flex-1 flex p-4 gap-4 overflow-hidden">
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex-shrink-0">
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-600 rounded-lg p-3 flex-shrink-0">
-                <Waves className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold mb-1">Climate planning for Pacific villages</h2>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  Built for the <span className="text-blue-400 font-semibold">Tabwakea, Kiribati</span> — the village council — 
-                  and community coordinators. See what climate change means for your village today, 
-                  in 2050, in 2100. Plan adaptations your community can actually build.
-                </p>
+          {hasSearched && (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex-shrink-0">
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <h2 className="text-xl font-bold mb-2">CHRISTMAS, KIRIBATI</h2>
+                  <p className="text-sm text-slate-300">
+                    Water level: <span className="font-semibold text-blue-400">0.0 m above MHHW</span>
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="text-xs font-semibold text-slate-400 mb-2">FLOODING VULNERABILITY</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-4 rounded" style={{ backgroundColor: '#707DDC' }}></div>
+                      <span className="text-sm text-slate-300">Vulnerable to Oceanic Flooding</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-4 rounded" style={{ backgroundColor: '#78C4F1' }}></div>
+                      <span className="text-sm text-slate-300">Vulnerable to Groundwater Flooding</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden relative">
             <img 
