@@ -9,7 +9,8 @@ import Statistics from './Statistics'
 import AssetPanel from './AssetPanel'
 import AdaptationConfirmModal from './AdaptationConfirmModal'
 import CoastlineTracerPanel, { CoastlineTraceLayer } from './CoastlineTracer'
-import { buildTracedFloodPolygon, TRACED_COASTLINE_VILLAGE_ID } from '../utils/coastline'
+import { buildTracedFloodBands, TRACED_COASTLINE_VILLAGE_ID } from '../utils/coastline'
+import FloodDepthGradientDefs, { FLOOD_DEPTH_GRADIENT } from './FloodDepthGradientDefs'
 
 export default function VillageView({ village, onBack }) {
   const [year, setYear] = useState(2026)
@@ -93,12 +94,15 @@ export default function VillageView({ village, onBack }) {
     ]
   }
 
-  // Muanikau (Nakawaqa) gets the real traced coastline; every other village
-  // falls back to the approximate hand-tuned shape until someone traces
-  // theirs too.
-  const floodPolygon = village.id === TRACED_COASTLINE_VILLAGE_ID
-    ? buildTracedFloodPolygon(year)
-    : fallbackFloodPolygonByYear[year]
+  // Muanikau (Nakawaqa) gets the real traced coastline, split into an
+  // "established" band (gradient fill, everything already underwater as
+  // of the previous slider step) and a "newlyFlooded" band (bright,
+  // pulsing — the leading strip that just went under this step). Every
+  // other village falls back to the old flat single-shade shape until
+  // someone traces theirs too.
+  const isTracedVillage = village.id === TRACED_COASTLINE_VILLAGE_ID
+  const floodBands = isTracedVillage ? buildTracedFloodBands(year) : null
+  const floodPolygon = isTracedVillage ? null : fallbackFloodPolygonByYear[year]
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
@@ -140,21 +144,61 @@ export default function VillageView({ village, onBack }) {
               subdomains="abcd"
             />
 
-            <Polygon
-              positions={floodPolygon}
-              pathOptions={{
-                color: '#3b82f6',
-                fillColor: '#1e40af',
-                fillOpacity: 0.55,
-                weight: 2,
-                dashArray: '5, 5'
-              }}
-            >
-              <Tooltip sticky opacity={0.9}>
-                <div style={{ fontWeight: 600 }}>Projected inundation zone</div>
-                <div style={{ fontSize: '11px' }}>Sea level +{seaLevelMeters}m by {year}</div>
-              </Tooltip>
-            </Polygon>
+            <FloodDepthGradientDefs />
+
+            {isTracedVillage ? (
+              <>
+                <Polygon
+                  positions={floodBands.established}
+                  pathOptions={{
+                    color: '#3b82f6',
+                    fillColor: FLOOD_DEPTH_GRADIENT,
+                    fillOpacity: 1,
+                    weight: 2,
+                    dashArray: '5, 5'
+                  }}
+                >
+                  <Tooltip sticky opacity={0.9}>
+                    <div style={{ fontWeight: 600 }}>Projected inundation zone</div>
+                    <div style={{ fontSize: '11px' }}>Sea level +{seaLevelMeters}m by {year}</div>
+                  </Tooltip>
+                </Polygon>
+
+                {floodBands.newlyFlooded.length > 0 && (
+                  <Polygon
+                    positions={floodBands.newlyFlooded}
+                    pathOptions={{
+                      color: '#93c5fd',
+                      fillColor: '#93c5fd',
+                      fillOpacity: 0.85,
+                      weight: 1.5,
+                      className: 'new-flood-band'
+                    }}
+                  >
+                    <Tooltip sticky opacity={0.9}>
+                      <div style={{ fontWeight: 600 }}>Newly flooded by {year}</div>
+                      <div style={{ fontSize: '11px' }}>Wasn't underwater as of the previous step</div>
+                    </Tooltip>
+                  </Polygon>
+                )}
+              </>
+            ) : (
+              <Polygon
+                positions={floodPolygon}
+                pathOptions={{
+                  color: '#3b82f6',
+                  fillColor: '#1e40af',
+                  fillOpacity: 0.55,
+                  weight: 2,
+                  dashArray: '5, 5'
+                }}
+              >
+                <Tooltip sticky opacity={0.9}>
+                  <div style={{ fontWeight: 600 }}>Projected inundation zone</div>
+                  <div style={{ fontSize: '11px' }}>Sea level +{seaLevelMeters}m by {year}</div>
+                </Tooltip>
+              </Polygon>
+            )}
 
             <CoastlineTraceLayer
               active={tracing}
