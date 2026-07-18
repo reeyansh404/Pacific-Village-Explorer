@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/adaptations.js": {
+      "maxDuration": 30
+    }
+  }
+}
